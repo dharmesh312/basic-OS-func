@@ -110,6 +110,7 @@ int command_issue(char **args){
         }
         
     }
+    return 1;
 }
 
 int command_history(char **args){
@@ -131,9 +132,12 @@ int command_history(char **args){
             }
 
         int his_n=atoi(args[1]);
-        while(his_n>=0){
+        int last=getLastArgs(commandStack);
+        //printf("%d\n",last);
+        //printf("%d\n",last);
+        while(his_n>0){
             if(commandStack[his_n]!=NULL){
-                printf("%s\t",commandStack[his_n]);
+                printf("%s\t",commandStack[last-his_n-1]);
             }
             printf("\n");
             his_n--;
@@ -200,11 +204,13 @@ int command_rm(char ** args){
                 DIR *dir;
                 char buf[256];
                 dir = opendir(args[2]);
-                while(dirVar = readdir(dir))
+                dirVar = readdir(dir);
+                while(dirVar)
                 {               
                     sprintf(buf, "%s/%s", args[2], dirVar->d_name);
                     printf("%s\n",dirVar->d_name);
                     remove(buf);
+                    dirVar = readdir(dir);
                 }
                 remove(args[2]);
                 free(dirVar);
@@ -233,7 +239,8 @@ int command_rm(char ** args){
             return 1;
         }
 
-    }       
+    }  
+    return 1;     
 }
 
 
@@ -254,7 +261,7 @@ char *copyString(char *line){
 
 
 int getLastArgs(char **args){
-    int i;
+    int i=0;
     while(args[i]!=NULL){
         i++;
     }
@@ -428,7 +435,7 @@ int myLoop(){
     free(commandStack);
     free(line);
     free(args);
-
+return 1;
 }
 
 
