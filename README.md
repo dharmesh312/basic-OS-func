@@ -1,4 +1,3 @@
-# basic-OS-func
 #contributers -:dharmesh chourasiya
                 tarun genwa
                 aman agarwal
