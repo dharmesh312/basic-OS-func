@@ -8,6 +8,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <signal.h>
+#include <fcntl.h>
+
 
 #define maxIPsize 256
 #define tokenSize 64
@@ -275,6 +277,60 @@ int launch(char **args)
 
     pid =fork();
     if (pid==0){
+    
+        int fd0,fd1,i,in=0,out=0;
+        char input[64],output[64];
+
+    // finds where '<' or '>' occurs and make that argv[i] = NULL , to ensure that command wont't read that
+
+    for(i=0;args[i]!='\0';i++)
+    {
+        if(strcmp(args[i],"<")==0)
+        {        
+            args[i]=NULL;
+            strcpy(input,args[i+1]);
+            in=2;           
+        }               
+
+        if(strcmp(args[i],">")==0)
+        {      
+            args[i]=NULL;
+            strcpy(output,args[i+1]);
+            out=2;
+        }         
+    }
+
+    //if '<' char was found in string inputted by user
+    if(in)
+    {   
+
+        // fdo is file-descriptor
+        int fd0;
+        if ((fd0 = open(input, O_RDONLY, 0)) < 0) {
+            perror("Couldn't open input file");
+            exit(0);
+        }           
+        // dup2() copies content of fdo in input of preceeding file
+        dup2(fd0, 0); // STDIN_FILENO here can be replaced by 0 
+
+        close(fd0); // necessary
+    }
+
+    //if '>' char was found in string inputted by user 
+    if (out)
+    {
+
+        int fd1 ;
+        if ((fd1 = creat(output , 0644)) < 0) {
+            perror("Couldn't open the output file");
+            exit(0);
+        }           
+
+        dup2(fd1, STDOUT_FILENO); // 1 here can be replaced by STDOUT_FILENO
+        close(fd1);
+    }
+
+
         if(execvp(args[0],args)==-1){
             perror("program error");
         }
@@ -288,17 +344,19 @@ int launch(char **args)
         //converting last argument to integer...
         int last=getLastArgs(args);
         int length = strlen (args[last-1]),i;
+
         for (i=0;i<length; i++){
-            if (!isdigit(args[1][i]))
+            if (!isdigit(args[last-1][i]))
             {
                 do{
                 waitpid(pid,&status,WUNTRACED);
                 }while(!WIFEXITED(status) && !WIFSIGNALED(status));
+                
                 return 1;
             }
         }    
         int n=atoi(args[last-1]);     
-        printf("%d\n",n);   
+        //printf("%d\n",n);   
         signal(SIGALRM, alarm_handler);        
         alarm(n); 
         pause();
