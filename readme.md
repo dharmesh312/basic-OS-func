@@ -1,6 +1,4 @@
-#contributers -:dharmesh chourasiya
-                tarun genwa
-                aman agarwal
+
 The code of myMain.c implement the basic os shell functions
       1.cd
       2.rm
